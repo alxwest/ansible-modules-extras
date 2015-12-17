@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-
 # WANT_JSON
 # POWERSHELL_COMMON
+
 $exefolder = "$env:programdata\nuget"
 $params = Parse-Args $args;
 $result = New-Object PSObject;
@@ -28,14 +28,10 @@ $package = Get-Attr -obj $params -name name -failifempty $true -emptyattributefa
 $outputdirectory = Get-Attr -obj $params -name outputdirectory --emptyattributefailmessage "missing required argument: outputdirectory"
 if ($outputdirectory) {$outputdirectory = $outputdirectory.Tolower()}
 
-$fileconflictaction = Get-Attr -obj $params -name fileconflictaction -default "none"
-
 $version = Get-Attr -obj $params -name version -default $null
 
 $source = Get-Attr -obj $params -name source -default $null
 if ($source) {$source = $source.Tolower()}
-
-
 
 $showlog = Get-Attr -obj $params -name showlog -default "false" | ConvertTo-Bool
 $state = Get-Attr -obj $params -name state -default "present"
@@ -50,17 +46,12 @@ if ($nugetexe)
 } 
 else 
 {
-    $nugetexe = "$exefolder\\nuget.exe"
+    $nugetexe = "$exefolder\nuget.exe"
 }
 
 if ("present","absent" -notcontains $state)
 {
     Fail-Json $result "state is $state; must be present or absent"
-}
-
-if ("overwrite","ignore","none" -notcontains $fileconflictaction)
-{
-    Fail-Json $result "fileconflictaction is $fileconflictaction; must be overwrite, ignore or none"
 }
 
 function Test-Administrator  
@@ -138,7 +129,6 @@ Function Nuget-PackageVersion
     $script:version
 }
 
-
 Function Nuget-IsInstalled
 {
     [CmdletBinding()]
@@ -167,12 +157,10 @@ Function Nuget-Install
         [Parameter(Mandatory=$false, Position=3)]
         [string]$source,
         [Parameter(Mandatory=$false, Position=4)]
-        [string]$fileconflictaction,
-        [Parameter(Mandatory=$false, Position=5)]
         [string]$outputdirectory
     )
 
-    if ((Nuget-IsInstalled $package $outputdirectory) -and $fileconflictaction -eq "none" )
+    if (Nuget-IsInstalled $package $outputdirectory)
     {
         return
     }
@@ -193,11 +181,6 @@ Function Nuget-Install
     {
         $cmd += " -outputdirectory $outputdirectory"
     }
-
-    if ($fileconflictaction)
-    {
-        $cmd += " -fileconflictaction $fileconflictaction"
-    }
     
     $results = invoke-expression $cmd
 
@@ -213,10 +196,11 @@ Function Nuget-Install
 
 Try
 {
+    Nuget-Install-Upgrade
+
     if ($state -eq "present")
     {
-        Nuget-Install -package $package -version $version -source $source `
-            -fileconflictaction $fileconflictaction -outputdirectory $outputdirectory 
+        Nuget-Install -package $package -version $version -source $source -outputdirectory $outputdirectory 
     }
     elseif (Nuget-IsInstalled $package $outputdirectory)
     {

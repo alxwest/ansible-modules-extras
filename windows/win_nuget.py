@@ -56,15 +56,6 @@ options:
       - Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
     require: false
     default: null 
-  fileconflictaction:
-    description:
-      - The action to take, when asked to overwrite or ignore existing files referenced by the project. Using fileconflictaction will cause ansible to always report that a change was made
-    required: false
-    choices:
-      - overwrite
-      - ignore
-	  - none
-    default: none 
 author: "Alex West (@alxwest)"
 '''
 

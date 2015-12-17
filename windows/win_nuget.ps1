@@ -117,7 +117,7 @@ Function Nuget-PackageVersion
 
     if($script:version -eq $null)
     {
-       $cmd = "$executable list $package"
+       $cmd = "$script:executable list $package"
        $results = invoke-expression $cmd
        if ($LastExitCode -ne 0)
        {
@@ -177,7 +177,7 @@ Function Nuget-Install
         return
     }
 
-    $cmd = "$executable install $package -verbosity detailed -noninteractive"
+    $cmd = "$script:executable install $package -verbosity detailed -noninteractive"
 
     if ($version)
     {

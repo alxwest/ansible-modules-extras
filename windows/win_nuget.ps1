@@ -28,7 +28,7 @@ $package = Get-Attr -obj $params -name name -failifempty $true -emptyattributefa
 $outputdirectory = Get-Attr -obj $params -name outputdirectory --emptyattributefailmessage "missing required argument: outputdirectory"
 if ($outputdirectory) {$outputdirectory = $outputdirectory.Tolower()}
 
-$fileconflictaction = Get-Attr -obj $params -name fileconflictaction -default "none" | ConvertTo-Bool
+$fileconflictaction = Get-Attr -obj $params -name fileconflictaction -default "none"
 
 $version = Get-Attr -obj $params -name version -default $null
 

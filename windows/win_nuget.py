@@ -48,7 +48,7 @@ options:
     default: null
   source:
     description:
-      - Specify source rather than using default nuget repository
+      - Specify source rather than using default nuget repository. Multiple sources can be provided using an array.
     require: false
     default: null
   outputdirectory:

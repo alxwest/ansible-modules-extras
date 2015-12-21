@@ -31,9 +31,7 @@ if ($outputdirectory) {$outputdirectory = $outputdirectory.Tolower()}
 $version = Get-Attr -obj $params -name version -default $null
 
 $source = Get-Attr -obj $params -name source -default $null
-if ($source) {$source = $source.Tolower()}
 
-$showlog = Get-Attr -obj $params -name showlog -default "false" | ConvertTo-Bool
 $state = Get-Attr -obj $params -name state -default "present"
 
 $customexe = $false
@@ -155,7 +153,7 @@ Function Nuget-Install
         [Parameter(Mandatory=$false, Position=2)]
         [string]$version,
         [Parameter(Mandatory=$false, Position=3)]
-        [string]$source,
+        $source,
         [Parameter(Mandatory=$false, Position=4)]
         [string]$outputdirectory
     )
@@ -171,8 +169,13 @@ Function Nuget-Install
     {
         $cmd += " -version $version"
     }
-
-    if ($source)
+	if($source -is [system.array])
+	{
+		foreach ($s in $source) {
+			  $cmd += " -source $s"
+			}
+	}
+	elseif ($source)
     {
         $cmd += " -source $source"
     }

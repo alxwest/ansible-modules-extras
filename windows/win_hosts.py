@@ -39,7 +39,7 @@ options:
     required: true
   state:
     description:
-      - present to ensure environment variable is set, or absent to ensure it is removed
+      - Present to ensure HOST record is present, or absent to ensure it is removed
     required: false
     default: present
     choices:
@@ -54,7 +54,7 @@ options:
     description:
       - HOSTS file to edit
     required: false
-    default: %WINDIR%\system32\drivers\etc\hosts 
+    default: "$env:Windir\system32\drivers\etc\hosts" 
 author: "Alex West (@alxwest)"
 '''
 
@@ -62,10 +62,9 @@ EXAMPLES = '''
 ---
 # Example from an Ansible Playbook
 - win_hosts:
-   name: locahost.local
-   ip: 127.0.0.1
-   state: present
-   comments: This is a comment
-
+    name: locahost.local
+    ip: 127.0.0.1
+    state: present
+    comments: This is a comment
 '''
 

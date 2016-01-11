@@ -54,7 +54,7 @@ options:
     description:
       - HOSTS file to edit
     required: false
-    default: "$env:Windir\\system32\\drivers\\etc\\hosts" 
+    default: "$env:Windir/system32/drivers/etc/hosts" 
 author: "Alex West (@alxwest)"
 '''
 

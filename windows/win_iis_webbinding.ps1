@@ -57,6 +57,7 @@ If ($params.ip) {
 }
 
 $certificateHash = Get-Attr $params "certificate_hash" $FALSE;
+$certificateFriendlyName = Get-Attr $params "certificate_friendly_name" $FALSE;
 $certificateStoreName = Get-Attr $params "certificate_store_name" "MY";
 
 # Ensure WebAdministration module is loaded
@@ -68,6 +69,7 @@ function Create-Binding-Info {
   return New-Object psobject @{
     "bindingInformation" = $args[0].bindingInformation
     "certificateHash" = $args[0].certificateHash
+    "certificateFriendlyName" = $args[0].certificateFriendlyName
     "certificateStoreName" = $args[0].certificateStoreName
     "isDsMapperEnabled" = $args[0].isDsMapperEnabled
     "protocol" = $args[0].protocol
@@ -95,7 +97,29 @@ try {
   if (-not $curent_bindings -and $state -eq 'present') {
     New-WebBinding @binding_parameters -Force
 
-    # Select certificat
+    # Select certificateHasd using the friendly name
+    if($certificateFriendlyName -ne $FALSE)
+    {
+      Set-Location Cert:\LocalMachine\$certificateStoreName
+      # Find the cert using the friendly name or subject's CN
+      # (IIS will default to the CN if no friendly name is specified)
+      $cert = Get-ChildItem | where {$_.FriendlyName -eq $certificateFriendlyName -or $_.Subject -like "CN=$certificateFriendlyName*" }
+
+      #Couldn't find cert
+      if(-not $cert)
+      {
+        throw "$certificateFriendlyName can't be found on machine"
+      }
+
+      #Multiple certs found
+      if($cert -is [System.Array])
+      {
+        throw "$certificateFriendlyName relates to several certificates"
+      }
+
+      $certificateHash = $cert.Thumbprint
+    }
+
     if($certificateHash -ne $FALSE) {
 
       $ip = $binding_parameters.IPAddress

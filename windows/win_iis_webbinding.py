@@ -72,6 +72,12 @@ options:
     required: false
     default: null
     aliases: []
+  certificate_friendly_name:
+    description:
+      - Certificate friendly name for the SSL binding. The certificate friendly anem is the identifier for the certificate.
+    required: false
+    default: null
+    aliases: []  
   certificate_hash:
     description:
       - Certificate hash for the SSL binding. The certificate hash is the unique identifier for the certificate.
@@ -126,6 +132,9 @@ $ ansible -i vagrant-inventory -m win_iis_webbinding -a "name='Default Web Site'
 
 # This will add a HTTPS binding and select certificate to use
 # ansible -i vagrant-inventory -m win_iis_webbinding -a "name='Default Web Site' protocol=https certificate_hash= B0D0FA8408FC67B230338FCA584D03792DA73F4C" windows
+
+# This will add a HTTPS binding and select certificate to use using the friendly name
+# ansible -i vagrant-inventory -m win_iis_webbinding -a "name='Default Web Site' protocol=https certificate_friendly_name = mysite.com" windows
 
 
 # Playbook example

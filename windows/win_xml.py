@@ -54,7 +54,7 @@ author: "Alex West (@alxwest)"
 '''
 
 EXAMPLES = '''
-        xml:
+    xml:
       file: "path/to/some/website/web.config"
       state: present
       xpath: "//appSettings/add[key='DefaultLoginRedirect']/@value"

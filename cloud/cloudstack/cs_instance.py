@@ -30,10 +30,15 @@ options:
   name:
     description:
       - Host name of the instance. C(name) can only contain ASCII letters.
-    required: true
+      - Name will be generated (UUID) by CloudStack if not specified and can not be changed afterwards.
+      - Either C(name) or C(display_name) is required.
+    required: false
+    default: null
   display_name:
     description:
       - Custom display name of the instances.
+      - Display name will be set to C(name) if not specified.
+      - Either C(name) or C(display_name) is required.
     required: false
     default: null
   group:
@@ -44,7 +49,6 @@ options:
   state:
     description:
       - State of the instance.
-      - C(restored) added in version 2.1.
     required: false
     default: 'present'
     choices: [ 'deployed', 'started', 'stopped', 'restarted', 'restored', 'destroyed', 'expunged', 'present', 'absent' ]
@@ -226,16 +230,21 @@ EXAMPLES = '''
     service_offering: 2cpu_2gb
     force: yes
 
-# Create or update a instance on Exoscale's public cloud
+# Create or update a instance on Exoscale's public cloud using display_name.
+# Note: user_data can be used to kickstart the instance using cloud-init yaml config.
 - local_action:
     module: cs_instance
-    name: web-vm-1
+    display_name: web-vm-1
     template: Linux Debian 7 64-bit
     service_offering: Tiny
     ssh_key: john@example.com
     tags:
       - { key: admin, value: john }
       - { key: foo,   value: bar }
+    user_data: |
+        #cloud-config
+        packages:
+          - nginx
 
 # Create an instance with multiple interfaces specifying the IP addresses
 - local_action:
@@ -480,7 +489,7 @@ class AnsibleCloudStackInstance(AnsibleCloudStack):
     def get_instance(self):
         instance = self.instance
         if not instance:
-            instance_name = self.module.params.get('name')
+            instance_name = self.get_or_fallback('name', 'display_name')
 
             args                = {}
             args['account']     = self.get_account(key='name')
@@ -827,23 +836,19 @@ class AnsibleCloudStackInstance(AnsibleCloudStack):
 
     def restore_instance(self):
         instance = self.get_instance()
-
-        if not instance:
-            instance = self.deploy_instance()
-            return instance
-
         self.result['changed'] = True
+        # in check mode intance may not be instanciated
+        if instance:
+            args = {}
+            args['templateid'] = self.get_template_or_iso(key='id')
+            args['virtualmachineid'] = instance['id']
+            res = self.cs.restoreVirtualMachine(**args)
+            if 'errortext' in res:
+                self.module.fail_json(msg="Failed: '%s'" % res['errortext'])
 
-        args = {}
-        args['templateid'] = self.get_template_or_iso(key='id')
-        args['virtualmachineid'] = instance['id']
-        res = self.cs.restoreVirtualMachine(**args)
-        if 'errortext' in res:
-            self.module.fail_json(msg="Failed: '%s'" % res['errortext'])
-
-        poll_async = self.module.params.get('poll_async')
-        if poll_async:
-            instance = self._poll_job(res, 'virtualmachine')
+            poll_async = self.module.params.get('poll_async')
+            if poll_async:
+                instance = self._poll_job(res, 'virtualmachine')
         return instance
 
 
@@ -870,7 +875,7 @@ class AnsibleCloudStackInstance(AnsibleCloudStack):
 def main():
     argument_spec = cs_argument_spec()
     argument_spec.update(dict(
-        name = dict(required=True),
+        name = dict(default=None),
         display_name = dict(default=None),
         group = dict(default=None),
         state = dict(choices=['present', 'deployed', 'started', 'stopped', 'restarted', 'restored', 'absent', 'destroyed', 'expunged'], default='present'),
@@ -897,9 +902,9 @@ def main():
         user_data = dict(default=None),
         zone = dict(default=None),
         ssh_key = dict(default=None),
-        force = dict(choices=BOOLEANS, default=False),
+        force = dict(type='bool', default=False),
         tags = dict(type='list', aliases=[ 'tag' ], default=None),
-        poll_async = dict(choices=BOOLEANS, default=True),
+        poll_async = dict(type='bool', default=True),
     ))
 
     required_together = cs_required_together()
@@ -910,6 +915,9 @@ def main():
     module = AnsibleModule(
         argument_spec=argument_spec,
         required_together=required_together,
+        required_one_of = (
+            ['display_name', 'name'],
+        ),
         mutually_exclusive = (
             ['template', 'iso'],
         ),
@@ -931,6 +939,7 @@ def main():
             instance = acs_instance.expunge_instance()
 
         elif state in ['restored']:
+            acs_instance.present_instance()
             instance = acs_instance.restore_instance()
 
         elif state in ['present', 'deployed']:
@@ -953,7 +962,7 @@ def main():
 
         result = acs_instance.get_result(instance)
 
-    except CloudStackException, e:
+    except CloudStackException as e:
         module.fail_json(msg='CloudStackException: %s' % str(e))
 
     module.exit_json(**result)

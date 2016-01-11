@@ -24,7 +24,7 @@
 DOCUMENTATION = '''
 ---
 module: win_hosts
-version_added: "1.9"
+version_added: "2.1"
 short_description: Add and remove hosts
 description:
   - Edits the windows HOSTS file

@@ -108,6 +108,15 @@ If ($params.user) {
           Fail-Json $result "$($Params.User) is not a valid user or group on the host machine or domain"
     }    
 }
+ElseIf($params.sid)
+{
+    $objSID = New-Object System.Security.Principal.SecurityIdentifier($params.sid)
+    $user = $objSID.Translate([System.Security.Principal.NTAccount])
+    if (!$user)
+    {
+          Fail-Json $result "$($Params.Sid) is not a valid user or group on the host machine or domain"
+    }
+}
 Else {
     Fail-Json $result "missing required argument: user.  specify the user or group to apply permission changes."
 }

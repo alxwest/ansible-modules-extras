@@ -36,7 +36,12 @@ options:
   user:
     description:
       - User or Group to add specified rights to act on src file/folder
-    required: yes
+    required: Only if sid is not supplied
+    default: none
+  sid:
+    description:
+      - Security Identifier for the User or Group to add specified rights to act on src file/folder
+    required: Only if user is not supplied
     default: none
   state:
     description:
@@ -136,4 +141,15 @@ $ ansible -i hosts -m win_acl -a "user=Fed-Phil path=C:\Important\Executable.exe
     rights: 'Read,Write,Modify,FullControl,Delete'
     type: 'deny'
     state: 'present'
+
+#Allow Network Service user FullControl to MySite using the Security Identifier
+- name: Add NETWORK SERVICE allow rights
+  win_acl:
+    path: 'C:\inetpub\wwwroot\MySite'
+    sid: 'S-1-5-20'
+    rights: 'FullControl'
+    type: 'allow'
+    state: 'present'
+    inherit: 'ContainerInherit, ObjectInherit'
+    propagation: 'None'
 '''

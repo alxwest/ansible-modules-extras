@@ -27,20 +27,21 @@ module: win_sql_deploy
 version_added: "1.9"
 short_description: Deploys SQL scripts to a database
 description:
-    - Deploys SQL prepared by ReadyRoll and packaged by Octopack.
+    - Deploys SQL scripts prepared by ReadyRoll and packaged by Octopack.
 options:
   path:
     description:
       - Path to SQL deployment package
     required: true
-  version:
-    description:
-      - Release version of the SQL deployment package to deploy
-    required: true
   server:
     description:
       - Name of the server that holds the database 
     required: true
+  release_version:
+    description:
+      - Release version of the SQL deployment package to deploy
+    required: false
+    default: null  
   database_name:
     description:
       - Name of the server to deploy to.
@@ -99,7 +100,7 @@ EXAMPLES = '''
   # Install package
   win_sql_deploy:
     path: /path/to/deployed/package
-    version: 1.2
+    server: locahost
     database_name: AdventureWorks
 
 '''

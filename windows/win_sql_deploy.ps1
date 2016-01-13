@@ -19,32 +19,23 @@
 # WANT_JSON
 # POWERSHELL_COMMON
  
-# win_sql_deploy module (File/Resources Permission Additions/Removal)
- 
+# win_sql_deploy module (Deploy SQL packages made by Ready Roll) 
  
 $params = Parse-Args $args;
  
 $result = New-Object psobject @{
-    win_acl = New-Object psobject
     changed = $false
 }
 #path 
 If ($params.path) {
     $path = $params.path.toString()
  
-    If (-Not (Test-Path -Path $path)) {
+    If (-Not (Test-Path (Join-Path $path "Deploy.ps1"))) {
         Fail-Json $result "$path file or directory does not exist on the host"
     }
 }
 Else {
     Fail-Json $result "missing required argument: path"
-}
-#version
-If ($params.version) {
-    $ReleaseVersion = $params.version.toString() 
-}
-Else {
-    Fail-Json $result "missing required argument: version"
 }
 #server
 If ($params.server) {
@@ -52,6 +43,10 @@ If ($params.server) {
 }
 Else {
     Fail-Json $result "missing required argument: server"
+}
+#version
+If ($params.release_version) {
+    $ReleaseVersion = $params.release_version.toString() 
 }
 #database_name
 If ($params.database_name) {
@@ -93,10 +88,11 @@ Try {
 
 	#Deploy.ps1
 	Invoke-Expression (Join-Path $path "Deploy.ps1")
-    $result.changed = $true
 
 	#PostDeploy.ps1
 	Invoke-Expression (Join-Path $path "PostDeploy.ps1")
+
+	$result.changed = $true
 }
 Catch {
     Fail-Json $result "an error occured when attempting to $state $rights permission(s) on $path for $user"

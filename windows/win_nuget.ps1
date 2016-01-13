@@ -195,6 +195,7 @@ Function Nuget-Install
     }
 
      $result.changed = $true
+     Set-Attr $result "install_path" "$outputdirectory\$package.$version"
 }
 
 Try

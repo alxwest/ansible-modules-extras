@@ -37,6 +37,11 @@ options:
     description:
       - Name of the server that holds the database 
     required: true
+  variables:
+    description:
+      - Other variables needed for the deployment
+    required: false
+    default: null  
   release_version:
     description:
       - Release version of the SQL deployment package to deploy
@@ -102,5 +107,7 @@ EXAMPLES = '''
     path: /path/to/deployed/package
     server: locahost
     database_name: AdventureWorks
+    variables:
+      staticFile: 'path/to/file'
 
 '''

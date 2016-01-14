@@ -26,6 +26,12 @@ $params = Parse-Args $args;
 $result = New-Object psobject @{
     changed = $false
 }
+#variables (do first so standard params take presidence)
+if($params.variables)
+{
+    $params.variables.psobject.properties | 
+     foreach {set-variable -Name $_.name -Value $_.value}
+}
 #path 
 If ($params.path) {
     $path = $params.path.toString()
@@ -85,24 +91,35 @@ If ($params.log_path) {
     $DefaultBackupPath = $params.backup_path.toString() 
 }
 Try {
-
+    $error.Clear();
     If (Test-Path (Join-Path $path "PreDeploy.ps1")) {
-       #PreDeploy.ps1
-       Invoke-Expression (Join-Path $path "PreDeploy.ps1")
-    }
-    
+       #PreDeploy.ps1      
+       $preR = Invoke-Expression (Join-Path $path "PreDeploy.ps1")
+       if($error.Count)
+       {
+          throw $error[0]  
+       }
+    }    
 	#Deploy.ps1
-	Invoke-Expression (Join-Path $path "Deploy.ps1")
-
+    $error.Clear();
+	$deployR = Invoke-Expression (Join-Path $path "Deploy.ps1")
+    if($error.Count)
+    {
+       throw $error[0]  
+    }        
     If (Test-Path (Join-Path $path "PostDeploy.ps1")) {
 	   #PostDeploy.ps1
-	   Invoke-Expression (Join-Path $path "PostDeploy.ps1")
+	   $postR = Invoke-Expression (Join-Path $path "PostDeploy.ps1")
+        if($error.Count)
+        {
+           throw $error[0]  
+        } 
     }
 
 	$result.changed = $true
 }
 Catch {
-    Fail-Json $result "an error occured when attempting to $state $rights permission(s) on $path for $user"
+    Fail-Json $result $_.Exception.Message
 }
  
 Exit-Json $result

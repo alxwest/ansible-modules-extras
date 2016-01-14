@@ -158,6 +158,8 @@ Function Nuget-Install
         [string]$outputdirectory
     )
 
+    Set-Attr $result "install_path" "$outputdirectory\$package.$version"
+
     if (Nuget-IsInstalled $package $outputdirectory)
     {
         return
@@ -194,8 +196,7 @@ Function Nuget-Install
         Throw "Error installing $package" 
     }
 
-     $result.changed = $true
-     Set-Attr $result "install_path" "$outputdirectory\$package.$version"
+    $result.changed = $true    
 }
 
 Try

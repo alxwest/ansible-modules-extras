@@ -104,27 +104,23 @@ Function Nuget-PackageVersion
         [string]$package
     )
 
-    if($script:version -eq $null)
-    {
-       $cmd = "$script:executable list $package"
-       $results = invoke-expression $cmd
-       if ($LastExitCode -ne 0)
-       {
-           Set-Attr $result "nuget_error_cmd" $cmd
-           Set-Attr $result "nuget_error_log" "$results"
-       
-           Throw "Error checking package version for $package" 
-       }
-       if($results -is [system.array])
-       {
-           Set-Attr $result "nuget_error_cmd" $cmd
-           Set-Attr $result "nuget_error_log" "More that one package returned"
-       
-           Throw "Error checking package version for $package" 
-       }
-       $script:version = $results.Substring($package.Length+1)    
-    }
-    $script:version
+   $cmd = "$script:executable list $package"
+   $results = invoke-expression $cmd
+   if ($LastExitCode -ne 0)
+   {
+       Set-Attr $result "nuget_error_cmd" $cmd
+       Set-Attr $result "nuget_error_log" "$results"
+   
+       Throw "Error checking package version for $package" 
+   }
+   if($results -is [system.array])
+   {
+       Set-Attr $result "nuget_error_cmd" $cmd
+       Set-Attr $result "nuget_error_log" "More that one package returned"
+   
+       Throw "Error checking package version for $package" 
+   }
+   return $results.Substring($package.Length+1)    
 }
 
 Function Nuget-IsInstalled
@@ -133,12 +129,18 @@ Function Nuget-IsInstalled
     
     param(
         [Parameter(Mandatory=$true, Position=1)]
-        [string]$package, 
-        [Parameter(Mandatory=$true, Position=2)]
+        [string]$package,
+        [Parameter(Mandatory=$false, Position=2)]
+        [string]$version,
+        [Parameter(Mandatory=$true, Position=3)]
         [string]$outputdirectory
     )
-
-    $version = Nuget-PackageVersion $package
+    if([string]::IsNullOrEmpty($version))
+    {
+        $version = Nuget-PackageVersion $package
+    }
+    Set-Attr $result "version" $version
+    Set-Attr $result "install_path" "$outputdirectory\$package.$version"
 
     return Test-Path "$outputdirectory\$package.$version\*.nupkg"    
 }
@@ -158,9 +160,7 @@ Function Nuget-Install
         [string]$outputdirectory
     )
 
-    Set-Attr $result "install_path" "$outputdirectory\$package.$version"
-
-    if (Nuget-IsInstalled $package $outputdirectory)
+    if (Nuget-IsInstalled $package $version $outputdirectory)
     {
         return
     }

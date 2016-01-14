@@ -92,26 +92,33 @@ If ($params.log_path) {
 }
 Try {
     $error.Clear();
+    cd $path 
     If (Test-Path (Join-Path $path "PreDeploy.ps1")) {
        #PreDeploy.ps1      
-       $preR = Invoke-Expression (Join-Path $path "PreDeploy.ps1")
+       $preR = Invoke-Expression .\PreDeploy.ps1
        if($error.Count)
        {
+          Set-Attr $result "sql_error_cmd" $SqlCmdWithAuth
           throw $error[0]  
        }
     }    
 	#Deploy.ps1
     $error.Clear();
-	$deployR = Invoke-Expression (Join-Path $path "Deploy.ps1")
+	$deployR = Invoke-Expression .\Deploy.ps1
+    Set-Attr $result "deployR" $deployR 
+
     if($error.Count)
     {
+       Set-Attr $result "sql_error_cmd" $SqlCmdWithAuth
        throw $error[0]  
     }        
     If (Test-Path (Join-Path $path "PostDeploy.ps1")) {
 	   #PostDeploy.ps1
-	   $postR = Invoke-Expression (Join-Path $path "PostDeploy.ps1")
+	   $postR = Invoke-Expression .\PostDeploy.ps1
+       Set-Attr $result "postR" $postR 
         if($error.Count)
         {
+           Set-Attr $result "sql_error_cmd" $SqlCmdWithAuth
            throw $error[0]  
         } 
     }

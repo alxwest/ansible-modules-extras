@@ -86,11 +86,18 @@ If ($params.log_path) {
 }
 Try {
 
+    If (Test-Path (Join-Path $path "PreDeploy.ps1")) {
+       #PreDeploy.ps1
+       Invoke-Expression (Join-Path $path "PreDeploy.ps1")
+    }
+    
 	#Deploy.ps1
 	Invoke-Expression (Join-Path $path "Deploy.ps1")
 
-	#PostDeploy.ps1
-	Invoke-Expression (Join-Path $path "PostDeploy.ps1")
+    If (Test-Path (Join-Path $path "PostDeploy.ps1")) {
+	   #PostDeploy.ps1
+	   Invoke-Expression (Join-Path $path "PostDeploy.ps1")
+    }
 
 	$result.changed = $true
 }

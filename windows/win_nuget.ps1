@@ -101,10 +101,22 @@ Function Nuget-PackageVersion
          
     param(
         [Parameter(Mandatory=$true, Position=1)]
-        [string]$package
+        [string]$package,
+        [Parameter(Mandatory=$false, Position=2)]
+        $source
     )
 
    $cmd = "$script:executable list $package"
+   if($source -is [system.array])
+   {
+       foreach ($s in $source) {
+             $cmd += " -source $s"
+           }
+   }
+   elseif ($source)
+   {
+       $cmd += " -source $source"
+   }
    $results = invoke-expression $cmd
    if ($LastExitCode -ne 0)
    {
@@ -132,12 +144,14 @@ Function Nuget-IsInstalled
         [string]$package,
         [Parameter(Mandatory=$false, Position=2)]
         [string]$version,
-        [Parameter(Mandatory=$true, Position=3)]
+        [Parameter(Mandatory=$false, Position=3)]
+        $source,
+        [Parameter(Mandatory=$true, Position=4)]
         [string]$outputdirectory
     )
     if([string]::IsNullOrEmpty($version))
     {
-        $version = Nuget-PackageVersion $package
+        $version = Nuget-PackageVersion $package $source
     }
     Set-Attr $result "version" $version
     Set-Attr $result "install_path" "$outputdirectory\$package.$version"
@@ -160,7 +174,7 @@ Function Nuget-Install
         [string]$outputdirectory
     )
 
-    if (Nuget-IsInstalled $package $version $outputdirectory)
+    if (Nuget-IsInstalled $package $version $source $outputdirectory)
     {
         return
     }

@@ -96,6 +96,7 @@ Try {
     If (Test-Path (Join-Path $path "PreDeploy.ps1")) {
        #PreDeploy.ps1      
        $preR = Invoke-Expression .\PreDeploy.ps1
+        Set-Attr $result "pre_deployed" $postR
        if($error.Count)
        {
           Set-Attr $result "sql_error_cmd" $SqlCmdWithAuth
@@ -105,7 +106,7 @@ Try {
 	#Deploy.ps1
     $error.Clear();
 	$deployR = Invoke-Expression .\Deploy.ps1
-    Set-Attr $result "deployR" $deployR 
+    Set-Attr $result "deployed" $deployR 
 
     if($error.Count)
     {
@@ -115,15 +116,17 @@ Try {
     If (Test-Path (Join-Path $path "PostDeploy.ps1")) {
 	   #PostDeploy.ps1
 	   $postR = Invoke-Expression .\PostDeploy.ps1
-       Set-Attr $result "postR" $postR 
+       Set-Attr $result "post_deployed" $postR 
         if($error.Count)
         {
            Set-Attr $result "sql_error_cmd" $SqlCmdWithAuth
            throw $error[0]  
         } 
     }
-
-	$result.changed = $true
+    if($deployR -match "EXECUTING MIGRATION")
+    {
+	   $result.changed = $true
+    }
 }
 Catch {
     Fail-Json $result $_.Exception.Message

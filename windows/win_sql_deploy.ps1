@@ -60,7 +60,7 @@ If ($params.database_name) {
 }
 #use_windows_auth
 If ($params.use_windows_auth -ne $null) {
-    $DatabaseName = $params.use_windows_auth
+    $UseWindowsAuth = $params.use_windows_auth
 }
 #username
 If ($params.username) {

@@ -35,13 +35,11 @@ options:
     required: yes
   user:
     description:
-      - User or Group to add specified rights to act on src file/folder
-    required: Only if sid is not supplied
+      - User or Group to add specified rights to act on src file/folder. Only required if no sid is provided.
     default: none
   sid:
     description:
-      - Security Identifier for the User or Group to add specified rights to act on src file/folder
-    required: Only if user is not supplied
+      - Security Identifier for the User or Group to add specified rights to act on src file/folder. Only required if no user is provided.
     default: none
   state:
     description:

@@ -22,7 +22,12 @@ import stat
 try:
     import json
 except ImportError:
-    import simplejson as json
+    try:
+        import simplejson as json
+    except ImportError:
+        # Let snippet from module_utils/basic.py return a proper error in this case
+        pass
+
 
 DOCUMENTATION = '''
 ---
@@ -170,7 +175,7 @@ def main():
         if p['puppetmaster']:
             cmd += " --server %s" % pipes.quote(p['puppetmaster'])
         if p['show_diff']:
-            cmd += " --show-diff"
+            cmd += " --show_diff"
         if p['environment']:
             cmd += " --environment '%s'" % p['environment']
         if module.check_mode:

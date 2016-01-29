@@ -74,7 +74,7 @@ options:
     aliases: []
   certificate_friendly_name:
     description:
-      - Certificate friendly name for the SSL binding. The certificate friendly anem is the identifier for the certificate.
+      - Certificate friendly name for the SSL binding. The certificate friendly name is the identifier for the certificate.
     required: false
     default: null
     aliases: []  

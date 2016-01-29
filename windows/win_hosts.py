@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-# (c) 2012, Michael DeHaan <michael.dehaan@gmail.com>, and others
+#
+# (c) 2016, alxwest <alxwest@gmail.com>
 #
 # This file is part of Ansible
 #

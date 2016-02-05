@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 #
 # (c) 2016, alxwest <alxwest@gmail.com>
 #
@@ -67,4 +66,3 @@ EXAMPLES = '''
     state: present
     comments: This is a comment
 '''
-
